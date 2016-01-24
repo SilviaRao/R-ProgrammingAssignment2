@@ -1,19 +1,75 @@
-# History files
-.Rhistory
-.Rapp.history
+Functions Creation: 
+##makeCacheMatrix function creates a special "matrix" object that can cache its inverse.
+##Matrix inversion 
+> makeCacheMatrix<- function(x=matrix()) {
++ 	inv<- NULL
++ 	set<- function(y) {
++ 		x<<- y
++ 		inv <<-NULL
++ 	}
++ 	get<- function() x
++ 	setInverse <- function(inverse) inv<<- inverse
++ 	getInverse <- function() inv
++ 	list(set = set,
++ 	     get = get,
++ 	     setInverse = setInverse,
++ 	     getInverse = getInverse)
++ }
 
-# Session Data files
-.RData
+##cacheSolve computes the inverse of the special "matrix" returned by makeCacheMatrix above. 
+##If the inverse has already been calculated (and the matrix has not changed), then the 
+##cachesolve should retrieve the inverse from the cache.
+> cacheSolve<- function(x, ...) {
++ 	inv <- x$getInverse()
++ 	if (!is.null(inv)) {
++ 		message("getting cached data")
++ 		return(inv)
++ 	}
++ 	mat<- x$get()
++ 	inv<- solve(mat, ...)
++ 	x$setInverse(inv)
++ 	inv
++ }
 
-# Example code in package build process
-*-Ex.R
 
-# RStudio files
-.Rproj.user/
+Testing Functions 
+> cacheSolve(my_matrix)
+     [,1] [,2]
+[1,]   -2  1.5
+[2,]    1 -0.5
 
-# produced vignettes
-vignettes/*.html
-vignettes/*.pdf
+> cacheSolve(my_matrix)
+getting cached data
+     [,1] [,2]
+[1,]   -2  1.5
+[2,]    1 -0.5
 
-# OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
-.httr-oauth
+> my_matrix$getInverse()
+     [,1] [,2]
+[1,]   -2  1.5
+[2,]    1 -0.5
+
+> my_matrix$set(matrix(c(2,2,1,4),nrow=2, ncol=2))
+> my_matrix$get()
+     [,1] [,2]
+[1,]    2    1
+[2,]    2    4
+
+> my_matrix$getInverse()
+NULL
+> cacheSolve(my_matrix)
+           [,1]       [,2]
+[1,]  0.6666667 -0.1666667
+[2,] -0.3333333  0.3333333
+
+> cacheSolve(my_matrix)
+getting cached data
+           [,1]       [,2]
+[1,]  0.6666667 -0.1666667
+[2,] -0.3333333  0.3333333
+
+> my_matrix$getInverse()
+           [,1]       [,2]
+[1,]  0.6666667 -0.1666667
+[2,] -0.3333333  0.3333333
+>  
